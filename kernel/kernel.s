@@ -1,15 +1,23 @@
 [bits 32]
 global main
 
-extern print_cell
+extern print_character
+extern print_str
 
 main:
     mov eax, 0
-    mov dx, 0x4f42
+    mov edx, 5
+    mov ecx, STR_TEST
 
-    push eax
-    push edx
+    call print_str
 
-    call print_cell
+    mov eax, -1
+    mov edx, -1
+    mov ecx, STR_TEST2
+    call print_str
+    jmp $
 
-   jmp $
+
+STR_TEST: db `Hhello\nhi`, 0x0
+STR_TEST2: db 'Hihi', 0x0
+

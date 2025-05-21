@@ -80,12 +80,11 @@ print_str:
     idiv    ebx                 ; divide offset by col to get row in eax
     add     eax, 1              ; point to next row
     imul    eax, COL            ; get character offset for that row
-    shl     eax, 1              ; and just point to the start of it
-
-    lea     edx, [eax + VGA_MEM]; then convert back to an address
+    shl     eax, 1              ; convert to memory offset
+    lea     edx, [eax + VGA_MEM]; and convert the offset to an address
     mov     [cursor], edx       ; also save it
     mov     ah, DEF_COLOR       ; and fix ah back up to what it should be
-    add     ecx, 1              ; and then point to next so we don't get stuck
+    add     ecx, 1              ; and then point to next char 
     pop ebx
     jmp     .loop
 

@@ -1,8 +1,9 @@
-NASM_SOURCES = $(wildcard kernel/*.s drivers/*.s)
+NASM_SOURCES = $(wildcard kernel/*.s drivers/*.s) 
 OBJ = ${NASM_SOURCES:.s=.o}
-
 all: os-image kernel.elf
 
+debug: all
+	qemu-system-i386 -S -s os-image
 run: all
 	qemu-system-i386 -s os-image
 

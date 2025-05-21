@@ -24,7 +24,7 @@ SECTION .text
     push eax
     push ecx
 
-    ; puts 15 in al and 14 in ah
+    ; puts 15 in ah and 14 in al
     ; probably faster to do 2 movs to eax instead
     ; but this is funnier
     mov     ax, 0xF0E   ; even in your vga drivers

@@ -2,6 +2,7 @@
 
 global print_character
 global print_str
+global test
 
 ; Assume we're running 80x25 text mode
 COL equ 80
@@ -22,16 +23,72 @@ cursor: resw 1
 SECTION .text
 
 
-; Puts current cursor character offset in ax
+; Puts current cursor character offset in dx
 %macro get_cursor 0
-    push edx
-    mov dl, SCREEN_CTRL_REG 
-    out 14, dl              ; ask for high byte of cursor offset
-    in  ah, SCREEN_DATA_REG ; get it
-    out 15, dl              ; ask for low byte of cursor offset
-    in  al, SCREEN_DATA_REG ; get it
-    pop edx
+    push eax
+    push ecx
+
+    ; puts 15 in al and 14 in ah
+    ; probably faster to do 2 movs to eax instead
+    ; but this is funnier
+    mov     ax, 0xF0E   ; even in your vga drivers
+
+    ; read high byte of cursor address
+    mov     dx, SCREEN_CTRL_REG
+    out     dx, al
+    mov     dx, SCREEN_DATA_REG
+    in      al, dx
+    mov     ch, al
+
+    ; shift ah to al here 
+    shr     ax, 8
+
+    ; read low byte of cursor address
+    mov     dx, SCREEN_CTRL_REG
+    out     dx, al
+    mov     dx, SCREEN_DATA_REG
+    in      al, dx
+    mov     cl, al
+
+    movzx    edx, cx
+
+   pop ecx
+   pop eax 
 %endmacro
+
+%macro set_cursor 1
+    push    eax
+    push    edx
+    push    ecx
+
+    mov ecx, %1
+
+    ; write out high byte of cursor offset
+    mov     dx, SCREEN_CTRL_REG 
+    mov     al, 14
+    out     dx, al
+    mov     dx, SCREEN_DATA_REG
+    mov     al, ch
+    out     dx, al
+    
+    ; write out low byte of cursor offset
+    mov     dx, SCREEN_CTRL_REG 
+    mov     al, 15
+    out     dx, al
+    mov     dx, SCREEN_DATA_REG
+    mov     al, cl
+    out     dx, al
+
+    pop ecx
+    pop edx
+    pop eax
+%endmacro
+
+
+test:
+;set_cursor 5
+
+ret 
 
 
 ; eax = col
@@ -42,7 +99,12 @@ print_str:
     jne     .notatcursor
     cmp     edx, -1
     jne     .notatcursor
-    mov     edx, [cursor]
+
+    ; get cursor offset and convert to memory address
+    get_cursor
+    lea     edx, [edx * 2 + VGA_MEM]
+    
+
     jmp     .atcursor
 
 
@@ -80,9 +142,8 @@ print_str:
     idiv    ebx                 ; divide offset by col to get row in eax
     add     eax, 1              ; point to next row
     imul    eax, COL            ; get character offset for that row
-    shl     eax, 1              ; convert to memory offset
-    lea     edx, [eax + VGA_MEM]; and convert the offset to an address
-    mov     [cursor], edx       ; also save it
+    set_cursor eax              ; set cursor at this point
+    lea     edx, [eax * 2 + VGA_MEM]; and convert the offset to an address
     mov     ah, DEF_COLOR       ; and fix ah back up to what it should be
     add     ecx, 1              ; and then point to next char 
     pop ebx
@@ -93,8 +154,13 @@ print_str:
     .notspecial:
     mov     WORD [edx], ax  ; no, write out the next one
     add     ecx, 1          ; point to next character
-    add     edx, 2          ; and next memory offset
-    mov     [cursor], edx   ; and save it
+
+    sub     edx, VGA_MEM    ; calculate character offset
+    shr     edx, 1          ; for cursor
+    add     edx, 1
+    set_cursor edx
+    
+    lea     edx, [edx * 2 + VGA_MEM]   ; and next memory offset
     jmp     .loop
 
     .end:

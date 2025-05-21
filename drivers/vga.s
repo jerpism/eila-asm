@@ -17,13 +17,10 @@ DEF_COLOR equ 0x4f ; 0x4f white on red
 SECTION .data
 SECTION .bss
 
-; keep track of current offset
-cursor: resw 1
-
 SECTION .text
 
 
-; Puts current cursor character offset in dx
+; Puts current cursor character offset in edx
 %macro get_cursor 0
     push eax
     push ecx

@@ -1,8 +1,7 @@
 [bits 32]
 
-global print_character
+global print_char
 global print_str
-global test
 
 ; Assume we're running 80x25 text mode
 COL equ 80
@@ -82,10 +81,19 @@ SECTION .text
 %endmacro
 
 
-test:
-;set_cursor 5
+; print character in eax at cursor position
+; uses default color
+print_char:
+    get_cursor                      ; first get current position
+    lea edx, [edx * 2 + VGA_MEM]    ; convert to a memory address
+    mov ah, DEF_COLOR               ; default color attributes in ah
+    mov WORD [edx], ax              ; write character out
+    lea edx, [edx - VGA_MEM + 2]    ; convert to memory offset for next cell
+    shr edx, 1                      ; convert to character offset
+    set_cursor edx                  ; and set cursor to it
 
-ret 
+
+    ret 
 
 
 ; eax = col

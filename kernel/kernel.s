@@ -1,9 +1,8 @@
 [bits 32]
 global main
 
-extern print_character
+extern print_char
 extern print_str
-extern test
 
 main:
     mov eax, 0
@@ -12,13 +11,15 @@ main:
 
     call print_str
 
-
     mov eax, -1
     mov edx, -1
     mov ecx, STR_TEST2
+
     call print_str
 
-    call test
+    mov eax, 'A'
+    call print_char
+
     jmp $
 
 

@@ -11,7 +11,7 @@ VGA_MEM equ 0xb8000
 SCREEN_CTRL_REG equ 0x3d4
 SCREEN_DATA_REG equ 0x3d5
 
-DEF_COLOR equ 0x4f ; 0x4f white on red
+DEF_COLOR equ 0x0f ; 0x0f white on black
 
 SECTION .data
 SECTION .bss

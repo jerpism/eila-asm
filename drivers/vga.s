@@ -83,12 +83,11 @@ SECTION .text
 print_char:
     mov edx, eax                    ; swap character to edx
     get_cursor                      ; get cursor to eax
-    lea eax, [eax * 2 + VGA_MEM]    ; convert to a memory address
+    add eax, 1                      ; point to next cell
+    set_cursor eax                  ; and set cursor to it
+    lea eax, [eax * 2 + VGA_MEM - 2]; print out to where cursor used to be
     mov dh, DEF_COLOR               ; default color attributes in dh
     mov WORD [eax], dx              ; write character out
-    lea eax, [eax - VGA_MEM + 2]    ; convert to memory offset for next cell
-    shr eax, 1                      ; convert to character offset
-    set_cursor eax                  ; and set cursor to it
 
     ret 
 

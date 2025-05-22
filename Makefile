@@ -1,5 +1,7 @@
 NASM_SOURCES = $(wildcard kernel/*.s drivers/*.s) 
 OBJ = ${NASM_SOURCES:.s=.o}
+NASMFLAGS = -g
+
 all: os-image kernel.elf
 
 debug: all
@@ -19,10 +21,10 @@ kernel.bin : kernel.elf
 
 
 %.o : %.s
-	nasm $< -g -f elf32 -o $@
+	nasm $< ${NASMFLAGS} -f elf32 -o $@
 
 %.bin : %.s
-	nasm $< -g -f bin -o $@
+	nasm $< ${NASMFLAGS} -f bin -o $@
 
 boot.bin : boot.s
 	nasm $< -f bin -o $@

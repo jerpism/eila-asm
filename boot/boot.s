@@ -162,7 +162,11 @@ BEGIN_PM:
     mov     ebp, 0x9000
     mov     esp, ebp
 
-    ; TODO: enable A20 here
+    ; enable fast A20 here
+    ; won't cause problems on qemu, might on real hardware
+    in      al, 0x92
+    or      al,2
+    out     0x92, al
 
     ; Leave bootloader and jump to kernel
     call    KERNEL_OFFSET

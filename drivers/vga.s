@@ -19,9 +19,9 @@ SECTION .bss
 SECTION .text
 
 
-; Puts current cursor character offset in edx
+; Puts current cursor character offset in eax
 %macro get_cursor 0
-    push eax
+    push edx
     push ecx
 
     ; puts 15 in ah and 14 in al
@@ -34,22 +34,19 @@ SECTION .text
     out     dx, al
     mov     dx, SCREEN_DATA_REG
     in      al, dx
-    mov     ch, al
-
-    ; shift ah to al here 
-    shr     ax, 8
+    ror     ax, 8   ; rotate around so al and ah swap places
+                    ; this puts high byte of cursor in ah 
 
     ; read low byte of cursor address
     mov     dx, SCREEN_CTRL_REG
     out     dx, al
     mov     dx, SCREEN_DATA_REG
     in      al, dx
-    mov     cl, al
 
-    movzx    edx, cx
+    movzx    eax, ax
 
    pop ecx
-   pop eax 
+   pop edx 
 %endmacro
 
 %macro set_cursor 1
@@ -84,14 +81,14 @@ SECTION .text
 ; print character in eax at cursor position
 ; uses default color
 print_char:
-    get_cursor                      ; first get current position
-    lea edx, [edx * 2 + VGA_MEM]    ; convert to a memory address
-    mov ah, DEF_COLOR               ; default color attributes in ah
-    mov WORD [edx], ax              ; write character out
-    lea edx, [edx - VGA_MEM + 2]    ; convert to memory offset for next cell
-    shr edx, 1                      ; convert to character offset
-    set_cursor edx                  ; and set cursor to it
-
+    mov edx, eax                    ; swap character to edx
+    get_cursor                      ; get cursor to eax
+    lea eax, [eax * 2 + VGA_MEM]    ; convert to a memory address
+    mov dh, DEF_COLOR               ; default color attributes in dh
+    mov WORD [eax], dx              ; write character out
+    lea eax, [eax - VGA_MEM + 2]    ; convert to memory offset for next cell
+    shr eax, 1                      ; convert to character offset
+    set_cursor eax                  ; and set cursor to it
 
     ret 
 
@@ -100,82 +97,59 @@ print_char:
 ; edx = row, to start at
 ; ecx = pointer to string
 print_str:
+    push    ebx
+    mov     ebx, VGA_MEM
+
     cmp     eax, -1
     jne     .notatcursor
     cmp     edx, -1
     jne     .notatcursor
 
-    ; get cursor offset and convert to memory address
+    ; get cursor offset 
     get_cursor
-    lea     edx, [edx * 2 + VGA_MEM]
     
-
     jmp     .atcursor
 
 
     .notatcursor:
     ; otherwise start at given position
-    ; calculate offset for given col,row
+    ; calculate character offset for given col,row
     imul    edx, COL
-    lea     edx, [edx + eax]
-    shl     edx, 1
-
-    ; set it as our base to begin at
-    lea     edx, [VGA_MEM + edx]
+    lea     eax, [edx + eax]
 
     .atcursor:
+    mov      dh, DEF_COLOR  ; set default color in high byte
 
-    mov      ah, DEF_COLOR  ; set default color in high byte
     .loop:
-    mov     al, BYTE [ecx]  ; load next character
-    test    al, al          ; got a NUL?
+    mov     dl, BYTE [ecx]  ; load next character
+    test    dl, dl          ; got a NUL?
     jz      .end            ; yeah, we're done
 
     ; check for special control characters
     ; just newline for now and it behaves as \r\n
-    cmp     al, 0xA             ; newline?
+    cmp     dl, 0xA             ; newline?
     jnz     .notspecial         ; no, just write out a regular one
 
-    ; TODO: figure out a better way to do this in way less instructions
-    ; there must be a smarter solution but for now I just want it to work
-    push ebx
-    mov     eax, edx            ; copy address to eax
-    sub     eax, VGA_MEM        ; convert it to an offset
-    shr     eax, 1              ; convert to a character offset
     xor     edx, edx            ; zero out edx for idiv
     mov     ebx, COL            ; use ebx as divisor
-    idiv    ebx                 ; divide offset by col to get row in eax
+    div     ebx                 ; divide offset by col to get row in eax
     add     eax, 1              ; point to next row
     imul    eax, COL            ; get character offset for that row
     set_cursor eax              ; set cursor at this point
-    lea     edx, [eax * 2 + VGA_MEM]; and convert the offset to an address
-    mov     ah, DEF_COLOR       ; and fix ah back up to what it should be
+    mov     ebx, VGA_MEM        ; set ebx back to vga memory base
+    mov     dh, DEF_COLOR       ; fix dh back up to what it should be
     add     ecx, 1              ; and then point to next char 
-    pop ebx
-    jmp     .loop
-
+    jmp     .loop               
 
 
     .notspecial:
-    mov     WORD [edx], ax  ; no, write out the next one
+    mov     WORD [eax * 2 + ebx], dx  ; wasn't a special, just write it out
     add     ecx, 1          ; point to next character
-
-    sub     edx, VGA_MEM    ; calculate character offset
-    shr     edx, 1          ; for cursor
-    add     edx, 1
-    set_cursor edx
+    add     eax, 1          ; advance to next cell
+    set_cursor eax          ; and set cursor
     
-    lea     edx, [edx * 2 + VGA_MEM]   ; and next memory offset
     jmp     .loop
 
     .end:
+    pop ebx
     ret
-    
-
-
-    
-
-
-
-
-

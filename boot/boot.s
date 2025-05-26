@@ -1,6 +1,6 @@
 [org 0x7c00]
 
-SECTORS equ 5
+SECTORS equ 4
 jmp _start
 
     align 32

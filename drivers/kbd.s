@@ -1,8 +1,17 @@
 [bits 32]
 
-global kb_map
+global kb_handler
+extern print_char
 
 SECTION .text
+
+kb_handler:
+    in      eax, 0x60
+    movzx   eax, byte [kb_map + eax]
+
+    call print_char
+    ret
+
 
 kb_map:
     db 0                ; 0x00 not valid

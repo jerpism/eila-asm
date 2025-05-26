@@ -6,9 +6,9 @@ extern print_char
 SECTION .text
 
 kb_handler:
-    in      eax, 0x60
+    in      al, 0x60
+    movzx   eax, al
     movzx   eax, byte [kb_map + eax]
-
     call print_char
     ret
 

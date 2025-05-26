@@ -23,7 +23,6 @@ PIC2_DAT equ 0xA1
 
 extern kb_handler
 
-
 global create_idt
 
 ; generic handler for faults
@@ -91,6 +90,12 @@ idt_start:
             dw  0           ; Address top
     %assign i i+1
     %endrep
+idt_end:
+
+idt_desc:
+    dw idt_end - idt_start - 1
+    dd idt_start
+
 
 create_idt:
     %assign i 0
@@ -102,9 +107,11 @@ create_idt:
     %assign i i+1
     %endrep
 
-    lidt    [idt_start]
+    lidt    [idt_desc]
     sti
     ret
+
+    
 
         
         

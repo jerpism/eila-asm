@@ -1,5 +1,6 @@
 [org 0x7c00]
 
+SECTORS equ 5
 jmp _start
 
     align 32
@@ -45,7 +46,6 @@ jmp _start
     DATA_SEG equ gdt_data - gdt_start
 
 
-
 SECTION .text
 [bits 16]
 
@@ -77,7 +77,7 @@ _start:
 
     ; read the rest of our data from the disk
     mov     bx, KERNEL_OFFSET   ; load kernel to offset address
-    mov     dh, 1               ; # sectors
+    mov     dh, SECTORS         ; # sectors
     mov     dl, [BOOT_DRIVE]    ; from the drive we booted from
     call    read_disk
 

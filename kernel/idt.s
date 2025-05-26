@@ -86,7 +86,7 @@ idt_start:
             dw  0           ; Address bottom
             dw  0x8         ; code segment
             db  0           ; zero
-            db  0           ; attributes
+            db  0x8e        ; attributes
             dw  0           ; Address top
     %assign i i+1
     %endrep

@@ -21,6 +21,9 @@ main:
 
     call    create_idt
 
+    mov     al, 0xfd
+    out     0x21, al
+
     jmp $
 
 

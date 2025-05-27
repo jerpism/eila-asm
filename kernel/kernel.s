@@ -14,10 +14,10 @@ main:
     mov     ecx, STR_TEST
     call    print_str
 
-;    mov     ecx, 0x20
-;    mov     edx, 0x28
-;    call    pic_remap
-;
+    mov     ecx, 0x20
+    mov     edx, 0x28
+    call    pic_remap
+
    ; mask out all but keyboard
     mov     al, 0xfd
     out     0x21, al

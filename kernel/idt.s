@@ -1,10 +1,8 @@
 [bits 32]
-
 PIC1_CMD equ 0x20
 PIC1_DAT equ 0x21
 PIC2_CMD equ 0xA0
 PIC2_DAT equ 0xA1
-
 ; sends EOI to the correct PIC 
 %macro send_eoi 1
     push eax
@@ -19,11 +17,21 @@ PIC2_DAT equ 0xA1
     pop eax
 %endmacro
 
-%define NUM_HANDLERS 33
+
+
+; put handlers here for now
+extern kb_handler
+; irq1
+isr33:
+    pusha
+    call kb_handler
+    send_eoi 1
+    popa
+    iret
+
 
 global create_idt
 
-SECTION .text
 ; Each idt entry consists of
 ; +0    dw address_bottom
 ; +2    dw cs_selector
@@ -73,12 +81,6 @@ create_idt:
     ret
 
 
-    extern kb_handler
-    ; irq1
-    isr33:
-        call kb_handler
-        send_eoi 1
-        iret
 
 
 ; generic handler for faults

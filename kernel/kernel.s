@@ -14,18 +14,22 @@ main:
     mov     ecx, STR_TEST
     call    print_str
 
-    ; remap pic, puts IMR value in ax
-    mov     ecx, 0x20
-    mov     edx, 0x28
-    call    pic_remap
+;    mov     ecx, 0x20
+;    mov     edx, 0x28
+;    call    pic_remap
+;
+   ; mask out all but keyboard
+    mov     al, 0xfd
+    out     0x21, al
+    mov     al, 0xff
+    out     0xa1, al
 
     call    create_idt
 
-    mov     al, 0xfd
-    out     0x21, al
+
 
     jmp $
 
 
-STR_TEST: db `Booted into protected mode succesfully`, 0x0
+    STR_TEST: db `Booted into protected mode succesfully`, 0x0
 

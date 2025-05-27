@@ -7,9 +7,14 @@ SECTION .text
 
 kb_handler:
     in      al, 0x60
+    cmp     al, 0x58    ; just lazily check if it's within range
+    ja .end
+
     movzx   eax, al
     movzx   eax, byte [kb_map + eax]
     call print_char
+
+    .end:
     ret
 
 

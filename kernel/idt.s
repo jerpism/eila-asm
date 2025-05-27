@@ -21,15 +21,14 @@ PIC2_DAT equ 0xA1
 
 %define NUM_HANDLERS 33
 
-extern kb_handler
 global create_idt
 
 SECTION .text
 ; Each idt entry consists of
 ; +0    dw address_bottom
 ; +2    dw cs_selector
-; +4    db flags
-; +5    db res (0)
+; +4    db res (0)
+; +5    db flags
 ; +6    dw address_top
 ; for a total of 8 bytes per entry
 align 64
@@ -55,8 +54,8 @@ create_idt:
 
     ; since these don't change, maybe combine to one mov
     mov     word [edx+2], 0x8           ; cs selector
-    mov     byte [edx+4], 0x8e          ; flags 
-    mov     byte [edx+5], 0x0           ; res, maybe this is unnecessary? does resq init to 0?
+    mov     byte [edx+4], 0x0           ; res, maybe this is unnecessary? does resq init to 0?
+    mov     byte [edx+5], 0x8e          ; flags 
     shr     eax, 16 
     mov     word [edx+6], ax            ; and last write out top of address
     %assign i i+1
@@ -69,8 +68,8 @@ create_idt:
     mov     eax, isr33
     mov     word [edx], ax
     mov     word [edx+2], 0x8
-    mov     byte [edx+4], 0x8e
-    mov     byte [edx+5], 0x0
+    mov     byte [edx+4], 0x0
+    mov     byte [edx+5], 0x8e
     shr     eax, 16 
     mov     word [edx+6], ax
 
@@ -78,14 +77,13 @@ create_idt:
     sti
     ret
 
+
+    extern kb_handler
     ; irq1
     isr33:
-        pushad
-       ; call kb_handler
-;       in al, 0x60
+        call kb_handler
         send_eoi 1
-        popad
-        iretd
+        iret
 
 
 ; generic handler for faults

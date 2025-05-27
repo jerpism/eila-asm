@@ -18,7 +18,7 @@ main:
     mov     edx, 0x28
     call    pic_remap
 
-   ; mask out all but keyboard
+    ; mask out all but keyboard
     mov     al, 0xfd
     out     0x21, al
     mov     al, 0xff

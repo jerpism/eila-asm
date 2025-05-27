@@ -13,16 +13,13 @@ PIC2_DAT equ 0xA1
 %macro send_eoi 1
     push eax
     mov al, 0x20
-
     %if %1 < 8
         out PIC1_CMD, al
     %else
         out PIC2_CMD, al
     %endif
-
     pop eax
 %endmacro
-
 
 
 ; ecx = offset1 for master
@@ -36,9 +33,9 @@ pic_remap:
 
     ; Remap PICs 
     mov     eax, ecx 
-    out     PIC1_DAT, eax   ; master
+    out     PIC1_DAT, al   ; master
     mov     eax, edx
-    out     PIC2_DAT, eax   ; slave
+    out     PIC2_DAT, al   ; slave
 
     mov     eax, 0b100      ; let master know there's a slave at line 2
     out     PIC1_DAT, al
@@ -49,20 +46,8 @@ pic_remap:
     out     PIC1_DAT, al
     out     PIC2_DAT, al
 
-    xor     eax, eax        ; unmask both
+    mov     al, 0xff    ; mask both
     out     PIC1_DAT, al
     out     PIC2_DAT, al
 
-    ; fallthru to test, uncomment to not do that
-    ; ret
-
-; returns the interrupt mask register 
-; call with eax zeroed or fallthru from remap
-pictest:
-    ; upper bits are already zeroed
-    in      al, PIC2_DAT
-    shl     ax, 8
-    in      al, PIC1_DAT
-
     ret
-

@@ -1,6 +1,6 @@
 [org 0x7c00]
 
-SECTORS equ 4
+SECTORS equ 8
 jmp _start
 
     align 32
@@ -52,6 +52,7 @@ SECTION .text
 KERNEL_OFFSET equ 0x1000
 
 _start:
+    cli 
     mov     [BOOT_DRIVE], dl    ; store # of drive we booted from
 
     ; set up a stack at 0x9000 temporarily
@@ -145,7 +146,7 @@ switch_to_pm:
     mov     cr0, eax
 
     ; long jump to flush our pipeline
-    jmp     CODE_SEG:BEGIN_PM
+    jmp     0x8:BEGIN_PM
 
 ; PM ZONE 
 [bits 32]
@@ -161,6 +162,32 @@ BEGIN_PM:
     ; and set up stack again
     mov     ebp, 0x9000
     mov     esp, ebp
+
+pic_remap:
+    ; start init on both PICs in cascade mode
+    ; and inform ICW4 will be present
+    mov     al, 0x11
+    out     0x20, al
+    out     0xA0, al
+
+    ; Remap PICs 
+    mov     eax, 0x20
+    out     0x21, al   ; master
+    mov     eax, 0x28
+    out     0xA1, al   ; slave
+
+    mov     eax, 0b100      ; let master know there's a slave at line 2
+    out     0x21, al
+    mov     al, 2           ; tell slave its identity is 2
+    out     0xA1, al 
+
+    mov     al, 1           ; set both to 8086 mode
+    out     0x21, al
+    out     0xA1, al
+
+    mov     al, 0xff    ; mask both
+    out     0x21, al
+    out     0xA1, al
 
     ; enable fast A20 here
     ; won't cause problems on qemu, might on real hardware

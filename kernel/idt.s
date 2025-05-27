@@ -52,10 +52,7 @@ create_idt:
 
     mov     word [edx], ax              ; write bottom half of address to idt entry
 
-    ; since these don't change, maybe combine to one mov
-    mov     word [edx+2], 0x8           ; cs selector
-    mov     byte [edx+4], 0x0           ; res, maybe this is unnecessary? does resq init to 0?
-    mov     byte [edx+5], 0x8e          ; flags 
+    mov     dword [edx+2], 0x8e000008   ; CS selector, reserved and flags
     shr     eax, 16 
     mov     word [edx+6], ax            ; and last write out top of address
     %assign i i+1
@@ -67,9 +64,7 @@ create_idt:
     lea     edx, [edx + 16]
     mov     eax, isr33
     mov     word [edx], ax
-    mov     word [edx+2], 0x8
-    mov     byte [edx+4], 0x0
-    mov     byte [edx+5], 0x8e
+    mov     dword [edx+2], 0x8e000008
     shr     eax, 16 
     mov     word [edx+6], ax
 

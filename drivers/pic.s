@@ -35,9 +35,9 @@ pic_remap:
     out     PIC2_CMD, al
 
     ; Remap PICs 
-    mov     al, cl
+    mov     eax, ecx 
     out     PIC1_DAT, eax   ; master
-    mov     al, dl
+    mov     eax, edx
     out     PIC2_DAT, eax   ; slave
 
     mov     eax, 0b100      ; let master know there's a slave at line 2
@@ -61,7 +61,7 @@ pic_remap:
 pictest:
     ; upper bits are already zeroed
     in      al, PIC2_DAT
-    shl     al, 8
+    shl     ax, 8
     in      al, PIC1_DAT
 
     ret

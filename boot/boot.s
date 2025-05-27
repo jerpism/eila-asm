@@ -1,6 +1,6 @@
 [org 0x7c00]
 
-SECTORS equ 8
+SECTORS equ 9
 jmp _start
 
     align 32
@@ -163,31 +163,6 @@ BEGIN_PM:
     mov     ebp, 0x9000
     mov     esp, ebp
 
-pic_remap:
-    ; start init on both PICs in cascade mode
-    ; and inform ICW4 will be present
-    mov     al, 0x11
-    out     0x20, al
-    out     0xA0, al
-
-    ; Remap PICs 
-    mov     eax, 0x20
-    out     0x21, al   ; master
-    mov     eax, 0x28
-    out     0xA1, al   ; slave
-
-    mov     eax, 0b100      ; let master know there's a slave at line 2
-    out     0x21, al
-    mov     al, 2           ; tell slave its identity is 2
-    out     0xA1, al 
-
-    mov     al, 1           ; set both to 8086 mode
-    out     0x21, al
-    out     0xA1, al
-
-    mov     al, 0xff    ; mask both
-    out     0x21, al
-    out     0xA1, al
 
     ; enable fast A20 here
     ; won't cause problems on qemu, might on real hardware

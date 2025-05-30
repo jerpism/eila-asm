@@ -3,15 +3,19 @@ global main
 
 extern print_str
 extern print_char
+extern print_uint
+extern print_hex
 
 extern pic_remap
 extern create_idt
 
 main:
     ; test print
-    mov     eax, -1
-    mov     edx, -1
-    mov     ecx, STR_TEST
+    mov     eax, 300
+    call    print_hex
+
+
+    mov     eax, STR_TEST
     call    print_str
 
     mov     ecx, 0x20

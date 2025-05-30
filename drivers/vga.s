@@ -2,6 +2,7 @@
 
 global print_char
 global print_str
+global print_at
 
 ; Assume we're running 80x25 text mode
 COL equ 80
@@ -92,10 +93,19 @@ print_char:
     ret 
 
 
+; print string at cursor location
+; eax = pointer to string
+print_str:
+    mov     ecx, eax
+    mov     edx, -1
+    mov     eax, -1
+    call    print_at
+    
+
 ; eax = col
 ; edx = row, to start at
 ; ecx = pointer to string
-print_str:
+print_at:
     push    ebx
     mov     ebx, VGA_MEM
 

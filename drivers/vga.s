@@ -84,12 +84,28 @@ SECTION .text
 print_char:
     mov edx, eax                    ; swap character to edx
     get_cursor                      ; get cursor to eax
+
+    cmp edx, `\n`                   ; is it a newline?
+    jne .1f                         ; nope
+    
+    ; yes, advance to next row
+    xor     edx, edx                ; zero out edx for idiv
+    mov     ecx, COL                ; use ebx as divisor
+    div     ecx                     ; divide offset by col to get row in eax
+    add     eax, 1                  ; point to next row
+    imul    eax, COL                ; get character offset for that row
+    set_cursor eax                  ; and set cursor
+    jmp     .end
+
+
+    .1f:
     add eax, 1                      ; point to next cell
     set_cursor eax                  ; and set cursor to it
     lea eax, [eax * 2 + VGA_MEM - 2]; print out to where cursor used to be
     mov dh, DEF_COLOR               ; default color attributes in dh
     mov WORD [eax], dx              ; write character out
 
+    .end:
     ret 
 
 
